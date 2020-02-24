@@ -28,6 +28,19 @@ long bezout(uint a,uint b,long *u,long *v){
 	long vp = 1;
 	long rs,vs,us,q;
  	// à développer
+  while(r!=0)
+  {
+    q=r*rp;
+    rs=r;
+    us=*u;
+    vs=*v;
+    r=rp;
+    *u=up;
+    *v=vp;
+    rp=rs-q*r;
+    up=us-q*up;
+    vp=vs-q*vp;
+  }
 	return r;
 }
 
