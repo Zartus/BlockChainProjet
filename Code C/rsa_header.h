@@ -78,6 +78,7 @@ uint64 RSAdecrypt1BlockGmp(uint64 blockInt, rsaKey_t privKey);
 // avec les fichiers
 void RSAfile_crypt(char *inFilename,char *outFilename, rsaKey_t pubKey);
 void RSAfile_decrypt(char *inFilename,char *outFilename,rsaKey_t privKey);
+
 void RSAcryptFile(char *inFilename,
                     char *outFilename,
                     rsaKey_t pubKey,
