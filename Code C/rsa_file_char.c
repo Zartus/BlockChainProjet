@@ -34,7 +34,7 @@ void RSAcryptFile(char *inFilename,char *outFilename,rsaKey_t pubKey,int *output
         }
         cryptedMsg=malloc(i*sizeof(uint64));
         RSAcrypt(msg,cryptedMsg,pubKey);
-        fprintf(fichier_out,"%s",base64_encode((unsigned char*)cryptedMsg,(size_t)i+100,(size_t*)output_length));
+        fprintf(fichier_out,"%s",base64_encode((unsigned char*)cryptedMsg,(size_t)i*sizeof(uint64),(size_t*)output_length));
     }
 
     free(msg);
@@ -76,23 +76,19 @@ void RSAunCryptFile(char *inFilename,char *outFilename,rsaKey_t privKey, int len
             }
             cryptedMsg[i]=caractereActuel;
             ++i;
-            printf("%c %d\n",caractereActuel,i);
         }
-        printf("%s\n",cryptedMsg);
-        printf("La taille est de:%d %d\n",length,i);
-        //printf("%d",);
-        int test=0;
-        printf("message final is: %s",base64_decode(cryptedMsg,i,(size_t*)&test));
-        printf("%d\n",test);
-        /*
-        for (int j=0;j<i;j++){
-            printf("%lu ",cryptedMsg[j]);
-        }*/
+
+        int test253;
+        uint64 *intRes2 = base64_decode(cryptedMsg,length*sizeof(uint64),&test253);
+        printf("\n==%d\n",test253);
+        printf("\n==%d\n",strlen(intRes2));
+        printf("\n\n");
         //printf("\n");
         //msg=malloc(i*sizeof(unsigned char));
         //RSAdecrypt(msg,cryptedMsg,privKey);
-        
-        //fprintf(fichier_out,"%s",base64_encode((unsigned char*)cryptedMsg,(size_t)i+100,(size_t*)output_length));
+        char *truc=malloc(test253*sizeof(char));
+        RSAdecrypt(truc,intRes2,privKey);
+        fprintf(fichier_out,"%s",truc);
     }
 
     //free(msg);

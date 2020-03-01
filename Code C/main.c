@@ -1,5 +1,5 @@
 /// \file phase2-2.c
-/// \brief test de la phase 2.2 
+/// \brief test de la phase 2.2
 
 #include "rsa_header.h"
 const int batch_length = 4;
@@ -14,9 +14,9 @@ int main(){
   int nbCar;
   printf("Chiffement du message...\n");
   RSAcryptFile("Data/msg.txt","Data/res.txt",pubKey,&nbCar);
-  printf("Fini, %d caractères lus\n",nbCar);
-  printf("Chiffement du message...\n");
+  printf("Fini, %d caractères lus à la dernière opération\n",nbCar);
+  printf("Déchiffement du message...\n");
   RSAunCryptFile("Data/res.txt","Data/msg_decrypt.txt",privKey,nbCar);
-  printf("Fini, %d caractères lus\n",nbCar);
+  printf("Fini, %d caractères lus à la dernière opération\n",nbCar);
   return 0;
 }
