@@ -1,98 +1,123 @@
+/**
+ * @file other_base64.c
+ * @author antonin.miloudi@gmail.com
+ * @brief Contient les fonctions qui permettent de crypter et de decrypter des fichiers
+ * @version 1
+ * @date 2020-03-04
+ * 
+ * @copyright Copyright (c) 2020
+ * 
+ */
 #include "rsa_header.h"
+#include <stdio.h>
+#include <stdlib.h>
 
+/**
+ * @brief permet de crypter un fichier
+ * 
+ * @param inFilename Fichier Source
+ * @param outFilename Fichier Destination
+ * @param pubKey Clef publique
+ * @param output_length Taille obtenue en sortie
+ */
 void RSAcryptFile(char *inFilename,char *outFilename,rsaKey_t pubKey,int *output_length){
-    FILE* fichier_in = NULL;
-    FILE* fichier_out = NULL;
 
-    fichier_in=fopen(inFilename,"r+");
-    fichier_out=fopen(outFilename,"w+");
-    
-    unsigned char *msg = malloc(100*sizeof(unsigned char));
-    int i=0;
-    uint64* cryptedMsg;
+  //varibale
+  FILE* fichierIn;
+  FILE* FichierOut;
+  *output_length = 0;
+  int lettre_courante;
+  uint64 cryptedChar;
+  char* char64;
 
-    if(fichier_in==NULL)
-    {
-        fprintf(stderr,"Probléme dans l'ouverture du fichier d'entrée");
-        exit(1);
-    }
-    else if(fichier_out==NULL)
-    {
-        fprintf(stderr,"Probleme dans le fichier de sortie");
-        exit(1);
-    }
-    else
-    {
-        int caractereActuel = 0;
-        while((caractereActuel = fgetc(fichier_in))!=EOF)
-        {
-            if(i%100==0){
-                msg=realloc(msg,((i/100)+1)*100*sizeof(unsigned char));
-            }
-            msg[i]=caractereActuel;
-            ++i;
-        }
-        cryptedMsg=malloc(i*sizeof(uint64));
-        RSAcrypt(msg,cryptedMsg,pubKey);
-        fprintf(fichier_out,"%s",base64_encode((unsigned char*)cryptedMsg,(size_t)i*sizeof(uint64),(size_t*)output_length));
+
+  //ouverture des fichiers
+  if((fichierIn = fopen(inFilename,"r")) == NULL) {
+    fprintf(stderr,"Erreur d'ouverture en lecture du fichier %s\n",inFilename);
+    exit(1);
+  }
+
+  if((FichierOut = fopen(outFilename,"w+")) == NULL){
+    fprintf(stderr,"Erreur d'ouverture en écriture du fichier %s\n",outFilename);
+    fclose(fichierIn);
+    exit(2);
+  }
+
+
+  while ( ! feof(fichierIn)){
+    lettre_courante = fgetc(fichierIn);
+    if(lettre_courante >= 0 && lettre_courante <= 127){
+     
+      //chiffrage et conversion
+      cryptedChar = puissance_mod_n(lettre_courante,pubKey.E,pubKey.N);
+      char64 = base64_encode(&cryptedChar,sizeof(uint64),output_length);
+      fputs(char64,FichierOut);
+
+      //liberation de la memoire donner par base64_encode
+      free(char64);
     }
 
-    free(msg);
-    free(cryptedMsg);
-    fclose(fichier_in);
-    fclose(fichier_out);
+  }
+
+
+  fclose(fichierIn);
+  fclose(FichierOut);
 }
 
+/**
+ * @brief Permet de decrypter un fichier
+ * 
+ * @param inFilename Designe le fichier Source
+ * @param outFilename Designe le fichier Destination
+ * @param privKey Clef privée
+ * @param length Longeur des caractéres base64
+ */
 void RSAunCryptFile(char *inFilename,char *outFilename,rsaKey_t privKey, int length){
-    FILE* fichier_in = NULL;
-    FILE* fichier_out = NULL;
 
-    fichier_in=fopen(inFilename,"r+");
-    fichier_out=fopen(outFilename,"w+");
-    
-    char * cryptedMsg = malloc(100*sizeof(unsigned char));
+  //====================
+  //      VARIABLES
+  //====================
 
-    int i=0;
-    //unsigned char *msg;
-    
+  FILE* src;
+  FILE* dst;
+  unsigned char charConv;
+  uint64 *cryptedChar;
+  char* char64;
+  size_t taille;
+  char64 = malloc(sizeof(char) * length);
 
-    if(fichier_in==NULL)
-    {
-        fprintf(stderr,"Probléme dans l'ouverture du fichier d'entrée");
-        exit(1);
-    }
-    else if(fichier_out==NULL)
-    {
-        fprintf(stderr,"Probleme dans le fichier de sortie");
-        exit(1);
-    }
-    else
-    {
-        int caractereActuel = 0;
-        while((caractereActuel = fgetc(fichier_in))!=EOF)
-        {
-            if(i%100==0){
-                cryptedMsg=realloc(cryptedMsg,((i/100)+1)*100*sizeof(char));
-            }
-            cryptedMsg[i]=caractereActuel;
-            ++i;
-        }
+  //=============================
+  //    OUVERTURE DES FICHIERS
+  //=============================
 
-        int test253;
-        uint64 *intRes2 = base64_decode(cryptedMsg,length*sizeof(uint64),&test253);
-        printf("\n==%d\n",test253);
-        printf("\n==%d\n",strlen(intRes2));
-        printf("\n\n");
-        //printf("\n");
-        //msg=malloc(i*sizeof(unsigned char));
-        //RSAdecrypt(msg,cryptedMsg,privKey);
-        char *truc=malloc(test253*sizeof(char));
-        RSAdecrypt(truc,intRes2,privKey);
-        fprintf(fichier_out,"%s",truc);
-    }
+  /*Ouverture du fichier inFilename avec vérification*/
+  if((src = fopen(inFilename,"r")) == NULL) {
+    fprintf(stderr,"Erreur d'ouverture en lecture du fichier %s\n",inFilename);
+    exit(1);
+  }
 
-    //free(msg);
-    free(cryptedMsg);
-    fclose(fichier_in);
-    fclose(fichier_out);
+  /*Ouverture du fichier outFilename avec vérification*/
+  if((dst = fopen(outFilename,"w+")) == NULL){
+    fprintf(stderr,"Erreur d'ouverture en écriture du fichier %s\n",outFilename);
+    fclose(src);
+    exit(2);
+  }
+
+  //lecture ligne par ligne
+  while (fgets(char64,length+1,src) && ! feof(src)){
+
+    //decodage et decryptage
+    cryptedChar = base64_decode(char64,length,&taille);
+    charConv = puissance_mod_n(*cryptedChar,privKey.E,privKey.N);
+
+    //ecriture dans le fichier de sortie
+    fputc(charConv,dst);
+
+    //liberation de la mémoire
+    free(cryptedChar);
+  }
+
+  free(char64);
+  fclose(src);
+  fclose(dst);
 }
