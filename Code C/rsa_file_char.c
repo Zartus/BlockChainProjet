@@ -21,26 +21,26 @@
  */
 void RSAcryptFile(char *inFilename,char *outFilename,rsaKey_t pubKey,int *output_length){
     /*declaration des variables*/
-    int ascii;
+    int lettre;
     char * strB64;
-    uint64 asciiCrypt;
+    uint64 Crypt;
 
     /*Ouverture des fichiers*/
     FILE * pFichierIn = fopen(inFilename, "r");
     if(pFichierIn == NULL){
-        fprintf(stderr,"[!] Erreur lecture de fichier d'entrée'");
+        fprintf(stderr,"Probleme dans la lecture du fichier d'entrée\n");
         exit(1);
     }
     FILE * pFichierOut = fopen(outFilename, "w+");
     if(pFichierOut == NULL){
-        fprintf(stderr,"[!] Erreur lecture de fichier de sortie");
+        fprintf(stderr,"Probleme dans la lecture du fichier de sortie\n");
         exit(2);
     }
 
     /*lecture du fichier d'entrée et ecriture dans le fichier de sortie*/
-    while ((ascii = fgetc(pFichierIn)) != EOF){
-        asciiCrypt = puissance_mod_n(ascii,pubKey.E,pubKey.N);
-        strB64 = base64_encode(&asciiCrypt, sizeof(uint64),output_length);
+    while ((lettre = fgetc(pFichierIn)) != EOF){
+        Crypt = puissance_mod_n(lettre,pubKey.E,pubKey.N);
+        strB64 = base64_encode((uchar*)&Crypt, sizeof(uint64),(size_t*)output_length);
         fprintf(pFichierOut,"%s",strB64);
         //fwrite(strB64, 1, *output_length, pFichierOut);
         free(strB64);
@@ -62,28 +62,28 @@ void RSAcryptFile(char *inFilename,char *outFilename,rsaKey_t pubKey,int *output
 void RSAunCryptFile(char *inFilename,char *outFilename,rsaKey_t privKey, int length){
     /*declaration des variables*/
     char *blockB64 = malloc(length*sizeof(char));
-    int devnull = length;
-    int ascii,back,code = 1;
-    int * asciiCrypt;
+    int longeur = length;
+    int lettre,code = 1;
+    int * crypt;
 
     /*Ouverture des fichiers*/
     FILE * pFichierIn = fopen(inFilename, "r");
     if(pFichierIn == NULL){
-        fprintf(stderr,"[!] Erreur lecture de fichier d'entrée'");
+        fprintf(stderr,"Probleme dans la lecture du fichier d'entrée\n");
         exit(1);
     }
     FILE * pFichierOut = fopen(outFilename, "w+");
     if(pFichierOut == NULL){
-        fprintf(stderr,"[!] Erreur lecture de fichier de sortie");
+        fprintf(stderr,"Probleme dans la lecture du fichier de sortie\n");
         exit(2);
     }
 
     /*Ouverture et ecriture dans le fichier de sortie*/
     while((code = fread(blockB64,length*sizeof(char),1, pFichierIn)) != 0){
-        asciiCrypt = base64_decode(blockB64,length*sizeof(char),&devnull);
-        ascii = puissance_mod_n(*asciiCrypt,privKey.E,privKey.N);
-        fprintf(pFichierOut,"%c",ascii);
-        free(asciiCrypt);
+        crypt = (int*)base64_decode(blockB64,length*sizeof(char),(size_t*)&longeur);
+        lettre = puissance_mod_n(*crypt,privKey.E,privKey.N);
+        fprintf(pFichierOut,"%c",lettre);
+        free(crypt);
     }
 
     /*On ferme les fichiers ouvert*/
