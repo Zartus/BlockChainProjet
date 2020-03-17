@@ -25,7 +25,7 @@ void RSAcrypt(unsigned char *msg, uint64 *cryptedMsg, rsaKey_t pubKey){
         cryptedMsg[i]=puissance_mod_n(msg[i],pubKey.E,pubKey.N);
         ++i;
     }
-
+    
 }
 
 /**

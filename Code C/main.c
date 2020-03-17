@@ -1,22 +1,41 @@
-/// \file phase2-2.c
-/// \brief test de la phase 2.2
-
+/// \author Vincent Dugat
+/// \date summer 2019
 #include "rsa_header.h"
-const int batch_length = 4;
+
 FILE *logfp;
 
-int main(){
-  logfp = stdout;
+int main(int argc,char **argv){
+  if (argc>1){
+    logfp = fopen(argv[1],"w+");
+    assert(logfp!=NULL);
+  }
+  else
+    logfp = stdout;
 
-  rsaKey_t pubKey = {7,5141};
-  rsaKey_t privKey = {4279,5141};
+// Phase 6.2
+// numérisation, cryptage et inverse.
+  rsaKey_t pubKeyb = {23,8889895013};
+  rsaKey_t privKeyb = {3865086887,8889895013};
 
-  int nbCar;
-  printf("Chiffement du message...\n");
-  RSAcryptFile("Data/msg.txt","Data/res.txt",pubKey,&nbCar);
-  printf("Fini, %d caractères lus à la dernière opération\n",nbCar);
-  printf("Déchiffement du message...\n");
-  RSAunCryptFile("Data/res.txt","Data/msg_decrypt.txt",privKey,nbCar);
-  printf("Fini, %d caractères lus à la dernière opération\n",nbCar);
+  FILE *f_in =fopen("Tests/res2.txt","r");
+  char num[32];
+  char res[32];
+  //printf("%lu\n",puissance_mod_n (1000, 23, 8889895013));
+
+  while (!feof(f_in)){
+    fscanf(f_in,"%s",num);
+    fscanf(f_in,"%s",res);
+    uint64 numInt = (uint64) strtol(num, (char **)NULL, 10);
+    uint64 resInt = (uint64) strtol(res, (char **)NULL, 10);
+    printf("num=%s res=%s ",num,res);
+    printf("numInt=%lu resInt=%lu ",numInt,resInt);
+    mpz_t calc;
+    mpz_init (calc);
+    puissance_mod_n_gmp(calc,numInt, pubKeyb.E, pubKeyb.N);
+    gmp_printf("%s is calc %Zd\n", "here", calc);
+    if (mpz_cmp_ui (calc,resInt)!=0)
+      printf("PB");
+    printf("\n");
+  }
   return 0;
 }
