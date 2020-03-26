@@ -72,7 +72,9 @@ void RSAunCryptFile(char *inFilename,char *outFilename,rsaKey_t privKey, int len
         fprintf(stderr,"Probleme dans la lecture du fichier d'entrée\n");
         exit(1);
     }
+    
     FILE * pFichierOut = fopen(outFilename, "w+");
+
     if(pFichierOut == NULL){
         fprintf(stderr,"Probleme dans la lecture du fichier de sortie\n");
         exit(2);
