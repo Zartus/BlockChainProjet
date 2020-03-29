@@ -3,7 +3,7 @@
  * @author Antonin MILOUDI (antonin.miloudi@gmail.com)
  * @brief 
  * @version 1
- * @date 2020-03-17
+ * @date 2020-03-29
  * 
  * @copyright Copyright (c) 2020
  * 
@@ -32,17 +32,21 @@ void RSAfile_crypt(char *inFilename, char *outFilename, rsaKey_t pubKey)
     size_t output_l;
     uint B;
     uint64 blockgmp;
+    
     /*Ouverture des fichiers */
     FILE *f_in = fopen(inFilename, "r");
+    
     if (f_in == NULL)
     {
         perror(inFilename);
         exit(1);
     }
+
     FILE *f_out = fopen(outFilename, "w+");
     if (f_out == NULL)
     {
         perror(outFilename);
+        fclose(f_in);
         exit(2);
     }
 
@@ -63,12 +67,12 @@ void RSAfile_crypt(char *inFilename, char *outFilename, rsaKey_t pubKey)
 void RSAfile_decrypt(char *inFilename, char *outFilename, rsaKey_t privKey)
 { 
     /*Variables declaration*/
-    int output_l = 0;
+    size_t output_l = 0;
     char blockB64[BLOCK_BASE_64];
     uint64 decrypt;
     int code = 1;
     uint64 *crypt;
-    uchar* uncryptedblock=malloc(sizeof(uchar)*BLOCK_SIZE);
+    uchar uncryptedblock[BLOCK_SIZE+1]={0};
 
     /*open all files */
     FILE *f_in = fopen(inFilename, "r");
@@ -84,6 +88,7 @@ void RSAfile_decrypt(char *inFilename, char *outFilename, rsaKey_t privKey)
     if (f_out == NULL)
     {
         perror(outFilename);
+        fclose(f_in);
         exit(2);
     }
 
@@ -91,12 +96,13 @@ void RSAfile_decrypt(char *inFilename, char *outFilename, rsaKey_t privKey)
     /*reding income file and crypting this file in the out file*/
     while ((code = fread(blockB64, sizeof(blockB64), 1, f_in)) != 0)
     {
-        crypt = (uint64 *)base64_decode(blockB64, sizeof(blockB64), (size_t *)&output_l);
+        crypt = (uint64 *)base64_decode(blockB64, sizeof(blockB64),&output_l);
         decrypt = RSAdecrypt1BlockGmp(*crypt, privKey); /*le message est decrypté*/
         convertInt2uchar(decrypt, uncryptedblock);
         fprintf(f_out, "%s", uncryptedblock);
         free(crypt);
     }
+
     /*close open files*/
     fclose(f_in);
     fclose(f_out);
