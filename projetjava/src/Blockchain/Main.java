@@ -1,10 +1,10 @@
-package projetS4.src.projetS4;
+package Blockchain;
 
 public class Main {
 	public static void main(String [] args) {
 		//on mine le hash
 		System.out.println("Debut");
-		int difficulte=4;
+		int difficulte=6;
 		
 		BlockChain chaine = new BlockChain(difficulte);
 		

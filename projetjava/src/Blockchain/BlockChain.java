@@ -1,15 +1,14 @@
-package projetS4.src.projetS4;
+package Blockchain;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 public class BlockChain {
-	final int nbTransactionmax=10;
+	private static final int nbTransactionmax=10;
 	private int difficulty;
 	private int nbBlock;
 	private String chaineDifficulty;
-	private List<Block> list;
+	private ArrayList<Block> list;
 	
 	public BlockChain(int difficulty) {
 		this.difficulty=difficulty;
@@ -44,6 +43,27 @@ public class BlockChain {
 		this.list.add(element);
 		this.nbBlock++;
 		System.out.println("Le block a été ajouter");
+	}
+	
+	/**
+	 * Methode qui permet de crée un nouveau block
+	 */
+	public void createBlock() {
+		
+		this.nbBlock++;
+		this.list.add(new Block(this.list.get(this.nbBlock-1).getHash(),this.nbTransaction(),this.nbBlock));
+		
+	}
+	
+	/**
+	 * Methode qui permet d'ajouter une transaction dans le boucle current
+	 * @param trans
+	 */
+	public void addTransaction(Transaction trans) {
+		if(!this.list.get(this.nbBlock-1).addTransaction(trans)) {
+			this.list.get(this.nbBlock-1).minage(this.chaineDifficulty);
+			this.createBlock();
+		}
 	}
 	
 	/**

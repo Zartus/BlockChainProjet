@@ -1,4 +1,4 @@
-package projetS4.src.projetS4;
+package Blockchain;
 
 import java.util.Calendar;
 
@@ -19,7 +19,7 @@ public class Transaction {
 	}
 	
 	/**
-	 * Retourne une chaine de caractere correspondant � la description d'une transaction
+	 * Retourne une chaine de caractere correspondant à la description d'une transaction
 	 */
 	public String toString() 
     {
@@ -28,6 +28,6 @@ public class Transaction {
 
 	public int getIndex() {
 		return index;
-	} 
+	}
 	
 }

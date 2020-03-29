@@ -1,15 +1,14 @@
-package projetS4.src.projetS4;
+package Blockchain;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 
 public class Block {
 	private int index;//numero du block dans la chaine
 	private String timestamp; //date au moment de la cr�ation
 	private String previousHash;//
 	private int nbTransaction;
-	private List<Transaction> list;//liste de transaction 
+	private ArrayList<Transaction> list;//liste de transaction 
 	//private String hashRoot;//pas encore utiliser
 	private String hash="";
 	private int nonce;
@@ -28,13 +27,6 @@ public class Block {
 		this.nbTransaction=0;
 		this.index=index;
 	}
-	
-	/*
-	public void makeTransaction(String transac) {
-		//faire une lecture d'un fichier ici ?? pas bien compris à voir
-		Transaction Trans = new Transaction();
-		list.add(e)
-	}*/
 	
 	public String getHash() {
 		return hash;
@@ -78,9 +70,19 @@ public class Block {
 		
 		do {
 			
-			this.setHash(projetS4.src.projetS4.HashUtil.applySha256(this.toString()));
+			this.setHash(Blockchain.HashUtil.applySha256(this.toString()));
+			
 		}while(!this.getHash().startsWith(difficulte));
 		
+	}
+	
+	/**
+	 * Permet de savoir si un block est complet
+	 * @return
+	 */
+	public boolean addTransaction(Transaction trans) {
+		list.add(trans);
+		return list.size()<nbTransaction;
 	}
 	
 	public String toString() 
@@ -93,5 +95,5 @@ public class Block {
 		}
 		
         return this.timestamp + this.previousHash + defBlock + nonce;
-    } 
+    }
 }

@@ -1,4 +1,4 @@
-package projetS4.src.projetS4;
+package Blockchain;
 
 import com.google.gson.Gson;
 import java.io.FileReader;
