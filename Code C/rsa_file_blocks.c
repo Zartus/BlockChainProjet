@@ -47,6 +47,7 @@ uint64 RSAdecrypt1BlockGmp(uint64 blockInt, rsaKey_t privKey)
  */
 void RSAfile_crypt(char *inFilename, char *outFilename, rsaKey_t pubKey)
 {
+    /*Variables declaration*/
     uchar block[BLOCK_SIZE];
     char *cryptedblock;
     int code;
@@ -54,7 +55,7 @@ void RSAfile_crypt(char *inFilename, char *outFilename, rsaKey_t pubKey)
     uint B;
     uint64 blockgmp;
 
-    /*Ouverture des fichiers */
+    /*opening files */
     FILE *f_in = fopen(inFilename, "r");
 
     if (f_in == NULL)
@@ -71,7 +72,7 @@ void RSAfile_crypt(char *inFilename, char *outFilename, rsaKey_t pubKey)
         exit(2);
     }
 
-    /*Lecture du fichiefr d'entrée et cryptage dans le fichier de sortie*/
+    /*reding income file and crypting in the out file*/
     while ((code = fread(block, sizeof(uchar), BLOCK_SIZE, f_in)) != 0)
     {
         B = convert_4byte2int((uchar *)block);
@@ -81,6 +82,8 @@ void RSAfile_crypt(char *inFilename, char *outFilename, rsaKey_t pubKey)
         memset(block, 0, BLOCK_SIZE);
         free(cryptedblock);
     }
+
+    /*closing files*/
     fclose(f_in);
     fclose(f_out);
 }
@@ -120,7 +123,7 @@ void RSAfile_decrypt(char *inFilename, char *outFilename, rsaKey_t privKey)
         exit(2);
     }
 
-    /*reding income file and crypting in the out file*/
+    /*reding income file and decrypting in the out file*/
     while ((code = fread(blockB64, sizeof(blockB64), 1, f_in)) != 0)
     {
         crypt = (uint64 *)base64_decode(blockB64, sizeof(blockB64), &output_l);
@@ -130,7 +133,7 @@ void RSAfile_decrypt(char *inFilename, char *outFilename, rsaKey_t privKey)
         free(crypt);
     }
 
-    /*closing of files*/
+    /*closing files*/
     fclose(f_in);
     fclose(f_out);
 }
