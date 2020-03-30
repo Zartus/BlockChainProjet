@@ -10,6 +10,13 @@
  */
 #include "rsa_header.h"
 
+/**
+ * @brief Permet de faire le chiffrage en utilisant GMP pour un block de 4 octets
+ * 
+ * @param blockInt : le blocks à chiffrer
+ * @param pubKey : la clé publique
+ * @return uint64 : le résultats de la fonction
+ */
 uint64 RSAcrypt1BlockGmp(uint64 blockInt, rsaKey_t pubKey)
 {
     mpz_t res;
@@ -17,6 +24,13 @@ uint64 RSAcrypt1BlockGmp(uint64 blockInt, rsaKey_t pubKey)
     return mpz_get_ui(res);
 }
 
+/**
+ * @brief Permet de faire le déchiffrage en utilisant GMP
+ * 
+ * @param blockInt : le block à décrypter
+ * @param privKey : la clé privée à utiliser
+ * @return uint64 : le résultats de la fonction
+ */
 uint64 RSAdecrypt1BlockGmp(uint64 blockInt, rsaKey_t privKey)
 {
     mpz_t res;
@@ -24,6 +38,13 @@ uint64 RSAdecrypt1BlockGmp(uint64 blockInt, rsaKey_t privKey)
     return mpz_get_ui(res);
 }
 
+/**
+ * @brief : chiffre un message par blocs depuis un fichier, codage en base64 et écriture dans un fichier.
+ * 
+ * @param inFilename : fichier d'entrée
+ * @param outFilename : fichier de sortie
+ * @param pubKey : clé publique à utiliser pour le cryptage
+ */
 void RSAfile_crypt(char *inFilename, char *outFilename, rsaKey_t pubKey)
 {
     uchar block[BLOCK_SIZE];
@@ -32,10 +53,10 @@ void RSAfile_crypt(char *inFilename, char *outFilename, rsaKey_t pubKey)
     size_t output_l;
     uint B;
     uint64 blockgmp;
-    
+
     /*Ouverture des fichiers */
     FILE *f_in = fopen(inFilename, "r");
-    
+
     if (f_in == NULL)
     {
         perror(inFilename);
@@ -51,32 +72,39 @@ void RSAfile_crypt(char *inFilename, char *outFilename, rsaKey_t pubKey)
     }
 
     /*Lecture du fichiefr d'entrée et cryptage dans le fichier de sortie*/
-    while ((code = fread(block,sizeof(uchar), BLOCK_SIZE, f_in)) != 0)
+    while ((code = fread(block, sizeof(uchar), BLOCK_SIZE, f_in)) != 0)
     {
         B = convert_4byte2int((uchar *)block);
         blockgmp = RSAcrypt1BlockGmp((uint64)B, pubKey);
         cryptedblock = base64_encode((uchar *)&blockgmp, sizeof(blockgmp), &output_l);
         fprintf(f_out, "%s", cryptedblock);
-        memset(block,0,BLOCK_SIZE);
+        memset(block, 0, BLOCK_SIZE);
         free(cryptedblock);
     }
     fclose(f_in);
     fclose(f_out);
 }
 
+/**
+ * @brief dechiffre un message par blocs depuis un fichier, codage en base64 et écriture dans un fichier.
+ * 
+ * @param inFilename : fichier d'entrer
+ * @param outFilename : fichier de sortie
+ * @param privKey : clé privée à utiliser pour le décryptage
+ */
 void RSAfile_decrypt(char *inFilename, char *outFilename, rsaKey_t privKey)
-{ 
+{
     /*Variables declaration*/
     size_t output_l = 0;
     char blockB64[BLOCK_BASE_64];
     uint64 decrypt;
     int code = 1;
     uint64 *crypt;
-    uchar uncryptedblock[BLOCK_SIZE+1]={0};
+    uchar uncryptedblock[BLOCK_SIZE + 1] = {0};
 
-    /*open all files */
+    /*opening files */
     FILE *f_in = fopen(inFilename, "r");
-    
+
     if (f_in == NULL)
     {
         perror(inFilename);
@@ -84,7 +112,7 @@ void RSAfile_decrypt(char *inFilename, char *outFilename, rsaKey_t privKey)
     }
 
     FILE *f_out = fopen(outFilename, "w+");
-    
+
     if (f_out == NULL)
     {
         perror(outFilename);
@@ -92,18 +120,17 @@ void RSAfile_decrypt(char *inFilename, char *outFilename, rsaKey_t privKey)
         exit(2);
     }
 
-    /*Lecture du fichier d'entrée et cryptage dans le fichier de sortie*/
-    /*reding income file and crypting this file in the out file*/
+    /*reding income file and crypting in the out file*/
     while ((code = fread(blockB64, sizeof(blockB64), 1, f_in)) != 0)
     {
-        crypt = (uint64 *)base64_decode(blockB64, sizeof(blockB64),&output_l);
+        crypt = (uint64 *)base64_decode(blockB64, sizeof(blockB64), &output_l);
         decrypt = RSAdecrypt1BlockGmp(*crypt, privKey); /*le message est decrypté*/
         convertInt2uchar(decrypt, uncryptedblock);
         fprintf(f_out, "%s", uncryptedblock);
         free(crypt);
     }
 
-    /*close open files*/
+    /*closing of files*/
     fclose(f_in);
     fclose(f_out);
 }
